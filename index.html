@@ -452,6 +452,318 @@
   }
   .edit-btn:hover { background: var(--accent-light); color: var(--accent); }
 
+  .memo-btn {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.15s;
+    margin-right: 2px;
+    position: relative;
+  }
+  .memo-btn:hover { background: #fef9e7; color: #d97706; }
+  .memo-btn.has-memo { color: #d97706; }
+  .memo-btn.has-memo::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    background: #d97706;
+    border-radius: 50%;
+  }
+
+  /* ===== チェックリストボタン ===== */
+  .checklist-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .checklist-btn:hover { background: #eef6ff; color: #2563eb; border-color: #93c5fd; }
+  .checklist-btn.has-checklist { border-color: #93c5fd; color: #2563eb; background: #eff6ff; }
+  .checklist-badge {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 700;
+    background: #2563eb;
+    color: white;
+    border-radius: 3px;
+    padding: 0 4px;
+    line-height: 1.5;
+  }
+
+  /* ===== チェックリストモーダル ===== */
+  .cl-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 400;
+    align-items: center;
+    justify-content: center;
+  }
+  .cl-modal-overlay.open { display: flex; }
+  .cl-modal {
+    background: white;
+    border-radius: 14px;
+    padding: 0;
+    width: 460px;
+    max-width: 92vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    overflow: hidden;
+  }
+  .cl-modal-head {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    background: #f8f9ff;
+  }
+  .cl-modal-head h3 {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .cl-modal-customer {
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .cl-modal-customer strong { color: var(--text); }
+  .cl-modal-progress {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cl-progress-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .cl-progress-bar {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 99px;
+    transition: width 0.3s;
+  }
+  .cl-progress-text {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 700;
+    color: #2563eb;
+    white-space: nowrap;
+  }
+  .cl-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+  }
+  .cl-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    transition: background 0.12s;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+  }
+  .cl-item:hover { background: var(--surface2); border-color: var(--border); }
+  .cl-item-check {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #2563eb;
+  }
+  .cl-item-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    border: none;
+    background: none;
+    font-family: 'Noto Sans JP', sans-serif;
+    padding: 0;
+  }
+  .cl-item-label.done-text {
+    text-decoration: line-through;
+    color: var(--text3);
+  }
+  .cl-item-del {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.12s;
+  }
+  .cl-item:hover .cl-item-del { opacity: 1; }
+  .cl-item-del:hover { background: var(--danger-light); color: var(--danger); }
+  .cl-add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border2);
+  }
+  .cl-add-input {
+    flex: 1;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .cl-add-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+  .cl-add-input::placeholder { color: var(--text3); }
+  .cl-add-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .cl-add-btn:hover { background: #1d4ed8; }
+  .cl-modal-foot {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+  }
+  .cl-clear-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+  }
+  .cl-clear-btn:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+
+  /* ===== メモモーダル ===== */
+  .memo-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  .memo-modal-overlay.open { display: flex; }
+  .memo-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 480px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .memo-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .memo-modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .memo-modal-customer {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .memo-modal-customer strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .memo-textarea {
+    width: 100%;
+    min-height: 180px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.7;
+  }
+  .memo-textarea:focus {
+    border-color: #d97706;
+    box-shadow: 0 0 0 3px #fef3c7;
+  }
+  .memo-textarea::placeholder { color: var(--text3); }
+  .memo-char-count {
+    font-size: 11px;
+    color: var(--text3);
+    text-align: right;
+    margin-top: 4px;
+  }
+  .memo-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+  .btn-memo-save {
+    background: #d97706;
+    color: white;
+    border: none;
+  }
+  .btn-memo-save:hover { background: #b45309; }
+
   .info-box {
     background: var(--accent-light);
     border: 1px solid #a7d4bb;
@@ -609,6 +921,7 @@
           <tr>
             <th style="width:36px"></th>
             <th>顧客名</th>
+            <th style="width:36px">チェック<br>リスト</th>
             <th>納車日</th>
             <th>希望番号<br><span style="font-weight:400;color:var(--text3)">申請期限</span></th>
             <th style="width:44px">申請<br>済</th>
@@ -713,6 +1026,53 @@
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeTaskModal()">キャンセル</button>
       <button class="btn btn-primary" onclick="saveTaskEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== CHECKLIST MODAL ====== -->
+<div class="cl-modal-overlay" id="cl-modal-overlay" onclick="closeClModalOutside(event)">
+  <div class="cl-modal">
+    <div class="cl-modal-head">
+      <h3>☑ チェックリスト</h3>
+      <div class="cl-modal-customer" id="cl-modal-customer"></div>
+      <div class="cl-modal-progress">
+        <div class="cl-progress-bar-wrap">
+          <div class="cl-progress-bar" id="cl-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="cl-progress-text" id="cl-progress-text">0 / 0</div>
+      </div>
+    </div>
+    <div class="cl-modal-body">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;padding:0 10px;">チェックリスト</div>
+      <div id="cl-items"></div>
+      <div class="cl-add-row">
+        <input class="cl-add-input" id="cl-add-input" type="text" placeholder="新しい項目を入力..." onkeydown="if(event.key==='Enter')addClItem()">
+        <button class="cl-add-btn" onclick="addClItem()">＋ 追加</button>
+      </div>
+    </div>
+    <div class="cl-modal-foot">
+      <button class="cl-clear-btn" onclick="clearDoneItems()">完了済みを削除</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="closeClModal()">閉じる</button>
+        <button class="btn" style="background:#2563eb;color:white;" onclick="saveChecklist()">💾 保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MEMO MODAL ====== -->
+<div class="memo-modal-overlay" id="memo-modal-overlay" onclick="closeMemoModalOutside(event)">
+  <div class="memo-modal">
+    <div class="memo-modal-header">
+      <h3>📝 メモ</h3>
+    </div>
+    <div class="memo-modal-customer" id="memo-modal-customer"></div>
+    <textarea class="memo-textarea" id="memo-textarea" placeholder="備考・申し送り事項などを入力してください..." oninput="updateMemoCharCount()"></textarea>
+    <div class="memo-char-count"><span id="memo-char-count">0</span> 文字</div>
+    <div class="memo-modal-actions">
+      <button class="btn btn-outline" onclick="closeMemoModal()">キャンセル</button>
+      <button class="btn btn-memo-save" onclick="saveMemo()">💾 保存</button>
     </div>
   </div>
 </div>
@@ -1196,6 +1556,141 @@ function closeTaskModalOutside(e) {
   if (e.target === document.getElementById('task-modal-overlay')) closeTaskModal();
 }
 
+// ============================================================
+// CHECKLIST
+// ============================================================
+let clTaskId = null;
+let clItems = []; // { id, text, done }
+
+function openChecklistModal(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  clTaskId = id;
+  clItems = JSON.parse(JSON.stringify(t.checklist || []));
+  document.getElementById('cl-modal-customer').innerHTML =
+    `<strong>${t.customer}　様</strong>` +
+    (t.nosha ? `　<span style="color:var(--text3);font-size:12px;">納車日: ${fmtFull(t.nosha)}</span>` : '');
+  renderClItems();
+  document.getElementById('cl-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('cl-add-input').focus(), 100);
+}
+
+function renderClItems() {
+  const done = clItems.filter(c => c.done).length;
+  const total = clItems.length;
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('cl-progress-bar').style.width = pct + '%';
+  document.getElementById('cl-progress-text').textContent = `${done} / ${total}`;
+
+  document.getElementById('cl-items').innerHTML = clItems.length === 0
+    ? `<div style="text-align:center;color:var(--text3);padding:24px 0;font-size:13px;">項目がありません。下の入力欄から追加してください。</div>`
+    : clItems.map((item, idx) => `
+      <div class="cl-item">
+        <input type="checkbox" class="cl-item-check" ${item.done ? 'checked' : ''}
+          onchange="toggleClItem(${idx})">
+        <input class="cl-item-label ${item.done ? 'done-text' : ''}" type="text"
+          value="${escHtml(item.text)}" onchange="editClItem(${idx}, this.value)"
+          onkeydown="if(event.key==='Enter')document.getElementById('cl-add-input').focus()">
+        <button class="cl-item-del" onclick="deleteClItem(${idx})" title="削除">✕</button>
+      </div>`).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleClItem(idx) {
+  clItems[idx].done = !clItems[idx].done;
+  renderClItems();
+}
+
+function editClItem(idx, val) {
+  clItems[idx].text = val.trim();
+}
+
+function deleteClItem(idx) {
+  clItems.splice(idx, 1);
+  renderClItems();
+}
+
+function addClItem() {
+  const inp = document.getElementById('cl-add-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  clItems.push({ id: Date.now(), text, done: false });
+  inp.value = '';
+  renderClItems();
+  inp.focus();
+}
+
+function clearDoneItems() {
+  if (!clItems.some(c => c.done)) return;
+  if (!confirm('完了済みの項目をすべて削除しますか？')) return;
+  clItems = clItems.filter(c => !c.done);
+  renderClItems();
+}
+
+function saveChecklist() {
+  const t = tasks.find(x => x.id === clTaskId);
+  if (!t) return;
+  t.checklist = JSON.parse(JSON.stringify(clItems));
+  save();
+  closeClModal();
+  renderTasks();
+}
+
+function closeClModal() {
+  document.getElementById('cl-modal-overlay').classList.remove('open');
+  clTaskId = null;
+  clItems = [];
+}
+
+function closeClModalOutside(e) {
+  if (e.target === document.getElementById('cl-modal-overlay')) closeClModal();
+}
+
+// ============================================================
+// MEMO
+// ============================================================
+let memoTaskId = null;
+
+function openMemoModal(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  memoTaskId = id;
+  document.getElementById('memo-modal-customer').innerHTML =
+    `<strong>${t.customer}　様</strong>` +
+    (t.nosha ? `　<span style="color:var(--text3);font-size:12px;">納車日: ${fmtFull(t.nosha)}</span>` : '');
+  const ta = document.getElementById('memo-textarea');
+  ta.value = t.memo || '';
+  updateMemoCharCount();
+  document.getElementById('memo-modal-overlay').classList.add('open');
+  setTimeout(() => ta.focus(), 100);
+}
+
+function saveMemo() {
+  const t = tasks.find(x => x.id === memoTaskId);
+  if (!t) return;
+  t.memo = document.getElementById('memo-textarea').value.trim();
+  save();
+  closeMemoModal();
+  renderTasks();
+}
+
+function closeMemoModal() {
+  document.getElementById('memo-modal-overlay').classList.remove('open');
+  memoTaskId = null;
+}
+
+function closeMemoModalOutside(e) {
+  if (e.target === document.getElementById('memo-modal-overlay')) closeMemoModal();
+}
+
+function updateMemoCharCount() {
+  const len = document.getElementById('memo-textarea').value.length;
+  document.getElementById('memo-char-count').textContent = len;
+}
+
 function setFilter(f, el) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1287,6 +1782,12 @@ function renderTasks() {
       return `<tr class="${t.done ? 'done' : ''}">
         <td><input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleDone(${t.id})"></td>
         <td><div class="customer-name">${t.customer}　様</div></td>
+        <td style="text-align:center">
+          <button class="checklist-btn ${(t.checklist && t.checklist.length > 0) ? 'has-checklist' : ''}" onclick="openChecklistModal(${t.id})" title="チェックリスト">
+            ☑
+            ${(t.checklist && t.checklist.length > 0) ? `<span class="checklist-badge">${t.checklist.filter(c=>c.done).length}/${t.checklist.length}</span>` : ''}
+          </button>
+        </td>
         <td class="date-cell">${t.nosha ? fmtFull(t.nosha) : '−'}</td>
         <td>${c.kibouDeadline
           ? urgencyBadge(c.kibouDeadline) + '<div class="date-calc">' + (t.kibou==='zutai'?'図柄申請':'希望番号') + '</div>'
@@ -1317,8 +1818,9 @@ function renderTasks() {
         <td>${urgencyBadge(c.glossKaiso)}<div class="date-calc">${c.glossKaiso ? '拠点回送日' : t.nyuko ? '設定なし' : '未入力'}</div></td>
         <td>${t.done ? '<span class="badge badge-done">完了</span>' : isUrgent(t) ? '<span class="badge badge-danger">要対応</span>' : '<span class="badge badge-ok">対応中</span>'}</td>
         <td style="white-space:nowrap">
-          <button class="edit-btn" onclick="openTaskEdit(${t.id})">✏️</button>
-          <button class="del-btn" onclick="deleteTask(${t.id})">🗑</button>
+          <button class="edit-btn" onclick="openTaskEdit(${t.id})" title="編集">✏️</button>
+          <button class="del-btn" onclick="deleteTask(${t.id})" title="削除">🗑</button>
+          <button class="memo-btn ${t.memo ? 'has-memo' : ''}" onclick="openMemoModal(${t.id})" title="${t.memo ? 'メモあり' : 'メモ'}">📝</button>
         </td>
       </tr>`;
     }).join('');
