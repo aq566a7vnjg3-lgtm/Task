@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>納車タスク管理</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f9f8f5;
+    --border: #e2e0d8;
+    --border2: #d0cdc3;
+    --text: #1a1917;
+    --text2: #6b6860;
+    --text3: #9b9890;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5ee;
+    --accent2: #c94f1e;
+    --accent2-light: #fdf0eb;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+    --honda-red: #cc0000;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.10), 0 8px 32px rgba(0,0,0,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--text);
+    color: white;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    background: var(--honda-red);
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .header-title { font-size: 15px; font-weight: 500; letter-spacing: 0.02em; }
+  .header-nav { display: flex; gap: 2px; }
+  .nav-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+  .nav-btn.active { color: white; background: rgba(255,255,255,0.12); }
+
+  /* ===== PAGES ===== */
+  .page { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ===== SECTION HEADER ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .section-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #235c42; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-outline {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ===== TASK LIST ===== */
+  .task-add-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .task-add-form h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 11px; color: var(--text2); font-weight: 500; }
+  .form-group input, .form-group select, .form-group textarea {
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  /* ===== TASK TABLE ===== */
+  .task-table-wrap { overflow-x: auto; }
+  .task-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .task-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .task-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .task-table tr:last-child td { border-bottom: none; }
+  .task-table tr:hover td { background: var(--surface2); }
+  .task-table tr.done td { opacity: 0.45; }
+  .task-table tr.done .task-name { text-decoration: line-through; }
+
+  /* ===== STATUS BADGES ===== */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge-ok { background: var(--accent-light); color: var(--accent); }
+  .badge-warn { background: var(--warning-light); color: var(--warning); }
+  .badge-danger { background: var(--danger-light); color: var(--danger); }
+  .badge-done { background: #f0f0f0; color: #999; }
+  .badge-none { background: #f5f5f5; color: #bbb; font-weight: 400; }
+
+  .date-cell { font-family: 'DM Mono', monospace; font-size: 12px; }
+  .date-calc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* チェックボックス */
+  .task-check {
+    width: 18px; height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+
+  .customer-name { font-weight: 700; }
+  .task-content { color: var(--text2); font-size: 12px; max-width: 160px; }
+
+  /* ===== FILTERS ===== */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: white;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .filter-btn.active {
+    background: var(--text);
+    color: white;
+    border-color: var(--text);
+  }
+  .filter-btn:hover:not(.active) { background: var(--surface2); }
+
+  /* ===== CALENDAR SETTINGS ===== */
+  .cal-month-selector {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .month-tab {
+    padding: 6px 4px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 500;
+    transition: all 0.15s;
+    color: var(--text2);
+    text-align: center;
+    width: 100%;
+  }
+  .month-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .month-tab:hover:not(.active) { background: var(--surface2); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    padding: 6px 4px;
+    letter-spacing: 0.04em;
+  }
+  .cal-day-header.sun { color: var(--danger); }
+  .cal-day-header.sat { color: #2563eb; }
+
+  .cal-cell {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    background: white;
+    min-height: 80px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .cal-cell:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .cal-cell.other-month { background: var(--surface2); opacity: 0.4; cursor: default; }
+  .cal-cell.other-month:hover { border-color: var(--border); box-shadow: none; }
+  .cal-cell.closed {
+    background: #f0efeb;
+    cursor: default;
+  }
+  .cal-cell.closed:hover { border-color: var(--border); box-shadow: none; }
+  .cal-cell.has-data { border-color: var(--accent); background: var(--accent-light); }
+  .cal-cell.sunday .cal-date { color: var(--danger); }
+  .cal-cell.saturday .cal-date { color: #2563eb; }
+
+  .cal-date {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .cal-closed-label {
+    font-size: 10px;
+    color: var(--text3);
+    font-weight: 500;
+  }
+  .cal-data-lines { display: flex; flex-direction: column; gap: 2px; }
+  .cal-data-line {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-data-line.touroku { background: #dbeafe; color: #1d4ed8; }
+  .cal-data-line.shorui { background: #fce7f3; color: #9d174d; }
+  .cal-data-line.gloss-nosha { background: #d1fae5; color: #065f46; }
+  .cal-data-line.gloss-kaiso { background: #fef3c7; color: #92400e; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .modal-date { font-size: 20px; font-family: 'DM Mono', monospace; color: var(--accent); margin-bottom: 16px; }
+  .modal-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .modal-row label { font-size: 11px; color: var(--text2); font-weight: 500; }
+  .modal-row input, .modal-row select {
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  .modal-row input:focus, .modal-row select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .modal-closed-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--surface2);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .modal-closed-toggle input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+  .modal-closed-toggle label { font-size: 13px; cursor: pointer; }
+
+  /* ===== STATS ===== */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 700; font-family: 'DM Mono', monospace; }
+  .stat-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .stat-card.danger .stat-num { color: var(--danger); }
+  .stat-card.warning .stat-num { color: var(--warning); }
+  .stat-card.ok .stat-num { color: var(--accent); }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text3);
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* delete btn */
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .del-btn:hover { background: var(--danger-light); color: var(--danger); }
+
+  .edit-btn {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.15s;
+    margin-right: 2px;
+  }
+  .edit-btn:hover { background: var(--accent-light); color: var(--accent); }
+
+  .info-box {
+    background: var(--accent-light);
+    border: 1px solid #a7d4bb;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* tabs for calendar type */
+  .cal-type-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+  .cal-type-tab {
+    padding: 7px 20px;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .cal-type-tab.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+  @media (max-width: 768px) {
+    .form-row { grid-template-columns: 1fr 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .cal-grid { gap: 2px; }
+    .cal-cell { min-height: 60px; padding: 4px; }
+    header { padding: 0 12px; }
+    .page { padding: 12px; }
+    .cal-month-selector { grid-template-columns: repeat(6, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .cal-month-selector { grid-template-columns: repeat(4, 1fr); }
+    .month-tab { font-size: 11px; padding: 5px 2px; }
+  }
+
+  /* チェック済み列の薄表示 */
+  .check-done-cell { opacity: 0.4; text-decoration: line-through; }
+
+  /* 登録課休日カレンダー */
+  .touroku-cell { cursor: pointer; }
+  .touroku-holiday {
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+  }
+  .touroku-holiday:hover {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 2px #fecaca !important;
+  }
+  .touroku-cell:not(.touroku-holiday):hover {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 2px #fee2e2;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="header-logo">Honda</span>
+    <span class="header-title">納車タスク管理</span>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-btn active" onclick="showPage('tasks')">📋 タスク一覧</button>
+    <button class="nav-btn" onclick="showPage('legend')">🗓 レジェンディア</button>
+    <button class="nav-btn" onclick="showPage('gloss')">🗓 GLOSS</button>
+    <button class="nav-btn" onclick="showPage('touroku')">📅 登録課休日</button>
+  </nav>
+</header>
+
+<!-- ====== PAGE: TASKS ====== -->
+<div id="page-tasks" class="page active">
+
+  <div class="stats-row" id="stats-row"></div>
+
+  <div class="task-add-form">
+    <h3>＋ 新規タスク登録</h3>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-group">
+        <label>顧客名</label>
+        <input type="text" id="inp-customer" placeholder="山田 太郎">
+      </div>
+
+      <div class="form-group">
+        <label>納車日（お客様）</label>
+        <input type="date" id="inp-nosha">
+      </div>
+      <div class="form-group">
+        <label>入庫日（車両到着）</label>
+        <input type="date" id="inp-nyuko">
+      </div>
+      <div></div>
+    </div>
+    <div class="form-row" style="align-items:end;">
+      <div class="form-group">
+        <label>車種区分</label>
+        <select id="inp-shatype">
+          <option value="">選択</option>
+          <option value="futsu">普通車</option>
+          <option value="kei">軽自動車</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>申請方法</label>
+        <select id="inp-method">
+          <option value="">選択</option>
+          <option value="oss">OSS申請</option>
+          <option value="daiko">書類代行</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>希望番号</label>
+        <select id="inp-kibou">
+          <option value="">なし</option>
+          <option value="kibou">希望番号</option>
+          <option value="zutai">希望図柄</option>
+        </select>
+      </div>
+      <div></div>
+      <button class="btn btn-primary" onclick="addTask()">登録</button>
+    </div>
+  </div>
+
+
+  <div class="section-header">
+    <div>
+      <div class="section-title">タスク一覧</div>
+      <div class="section-sub">期日はカレンダー設定から自動計算されます</div>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('all', this)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('active', this)">未完了</button>
+      <button class="filter-btn" onclick="setFilter('urgent', this)">⚠ 期限迫る</button>
+      <button class="filter-btn" onclick="setFilter('done', this)">完了済</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div class="task-table-wrap">
+      <table class="task-table" id="task-table">
+        <thead>
+          <tr>
+            <th style="width:36px"></th>
+            <th>顧客名</th>
+            <th>納車日</th>
+            <th>希望番号<br><span style="font-weight:400;color:var(--text3)">申請期限</span></th>
+            <th style="width:44px">申請<br>済</th>
+            <th>書類到着<br><span style="font-weight:400;color:var(--text3)">期限</span></th>
+            <th style="width:44px">提出<br>済</th>
+            <th>登録/書類締切<br><span style="font-weight:400;color:var(--text3)">レジェンディア</span></th>
+            <th style="width:44px">登録<br>済</th>
+            <th>入庫日</th>
+            <th>納車C最短<br><span style="font-weight:400;color:var(--text3)">GLOSS</span></th>
+            <th>拠点回送日<br><span style="font-weight:400;color:var(--text3)">GLOSS</span></th>
+            <th>状態</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="task-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PAGE: LEGEND CALENDAR ====== -->
+<div id="page-legend" class="page">
+  <div class="section-header">
+    <div>
+      <div class="section-title">レジェンディア納車センター カレンダー</div>
+      <div class="section-sub">納車日ごとの「新車登録締切日」「拠点書類締切日」を設定</div>
+    </div>
+  </div>
+  <div class="info-box">
+    📌 日付をクリックして期日を入力してください。グレーのマスは定休日（入力不要）です。
+  </div>
+  <div class="cal-month-selector" id="legend-months"></div>
+  <div class="cal-grid" id="legend-cal"></div>
+</div>
+
+<!-- ====== PAGE: GLOSS CALENDAR ====== -->
+<div id="page-gloss" class="page">
+  <div class="section-header">
+    <div>
+      <div class="section-title">GLOSS作業カレンダー</div>
+      <div class="section-sub">入庫日ごとの「納車C最短納車日」「拠点回送日」を設定</div>
+    </div>
+  </div>
+  <div class="info-box">
+    📌 日付をクリックして期日を入力してください。定休日のマスは入力不要です。
+  </div>
+  <div class="cal-month-selector" id="gloss-months"></div>
+  <div class="cal-grid" id="gloss-cal"></div>
+</div>
+
+<!-- ====== PAGE: TOUROKU HOLIDAY CALENDAR ====== -->
+<div id="page-touroku" class="page">
+  <div class="section-header">
+    <div>
+      <div class="section-title">登録課・本社 休日カレンダー</div>
+      <div class="section-sub">登録書類が提出できない日（赤い日）を設定。提出期限の逆算に使用されます。</div>
+    </div>
+  </div>
+  <div class="info-box">
+    📌 日付をクリックして休日のON/OFFを切り替えられます。<strong>赤くなっている日＝提出不可</strong>として提出期限の逆算から除外されます。
+  </div>
+  <div class="cal-month-selector" id="touroku-months"></div>
+  <div class="cal-grid" id="touroku-cal"></div>
+</div>
+
+<!-- ====== TASK EDIT MODAL ====== -->
+<div class="modal-overlay" id="task-modal-overlay" onclick="closeTaskModalOutside(event)">
+  <div class="modal" id="task-modal">
+    <h3>✏️ タスクを編集</h3>
+    <div id="task-modal-fields">
+      <div class="modal-row">
+        <label>顧客名</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="text" id="te-customer" style="flex:1;">
+          <span style="font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;">様</span>
+        </div>
+      </div>
+      <div class="modal-row"><label>納車日（お客様）</label><input type="date" id="te-nosha"></div>
+      <div class="modal-row"><label>入庫日（車両到着）</label><input type="date" id="te-nyuko"></div>
+      <div class="modal-row"><label>車種区分</label>
+        <select id="te-shatype">
+          <option value="">選択</option>
+          <option value="futsu">普通車</option>
+          <option value="kei">軽自動車</option>
+        </select>
+      </div>
+      <div class="modal-row"><label>申請方法</label>
+        <select id="te-method">
+          <option value="">選択</option>
+          <option value="oss">OSS申請</option>
+          <option value="daiko">書類代行</option>
+        </select>
+      </div>
+      <div class="modal-row"><label>希望番号</label>
+        <select id="te-kibou">
+          <option value="">なし</option>
+          <option value="kibou">希望番号</option>
+          <option value="zutai">希望図柄</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeTaskModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveTaskEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL ====== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <h3 id="modal-title">期日を設定</h3>
+    <div class="modal-date" id="modal-date"></div>
+    <div class="modal-closed-toggle" onclick="toggleClosed()">
+      <input type="checkbox" id="modal-closed">
+      <label for="modal-closed">定休日・休業日にする（期日なし）</label>
+    </div>
+    <div id="modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveModal()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let tasks = JSON.parse(localStorage.getItem('nm_tasks') || '[]');
+let legendData = JSON.parse(localStorage.getItem('nm_legend') || '{}');
+let glossData = JSON.parse(localStorage.getItem('nm_gloss') || '{}');
+let tourokuHolidays = JSON.parse(localStorage.getItem('nm_touroku_holidays') || '{}');
+
+// calendar.json を自動読み込み（管理者が出力したファイル）
+(async function loadCalendarJSON() {
+  try {
+    const res = await fetch('calendar.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.legend)  { legendData = data.legend; localStorage.setItem('nm_legend', JSON.stringify(legendData)); }
+    if (data.gloss)   { glossData  = data.gloss;  localStorage.setItem('nm_gloss',  JSON.stringify(glossData)); }
+    if (data.tourokuHolidays) { tourokuHolidays = data.tourokuHolidays; localStorage.setItem('nm_touroku_holidays', JSON.stringify(tourokuHolidays)); }
+    renderTasks();
+    console.log('calendar.json 読み込み完了:', data.exportedAt || '');
+  } catch(e) {
+    // calendar.json がない場合はlocalStorageのデータを使用
+    console.log('calendar.json 未検出。localStorageのデータを使用します。');
+  }
+})();
+
+let currentFilter = 'all';
+let currentLegendMonth = '2026-05';
+let currentGlossMonth = '2026-05';
+let currentTourokuMonth = '2026-05';
+let modalState = {};
+
+const MONTHS = [
+  '2026-01','2026-02','2026-03','2026-04',
+  '2026-05','2026-06','2026-07','2026-08',
+  '2026-09','2026-10','2026-11','2026-12'
+];
+const MONTH_LABELS = {
+  '2026-01':'1月','2026-02':'2月','2026-03':'3月','2026-04':'4月',
+  '2026-05':'5月','2026-06':'6月','2026-07':'7月','2026-08':'8月',
+  '2026-09':'9月','2026-10':'10月','2026-11':'11月','2026-12':'12月'
+};
+
+// ============================================================
+// INITIAL DATA - レジェンディアカレンダー（画像より）
+// ============================================================
+function loadInitialLegendData() {
+  const initial = {
+    // 5月
+    '2026-05-01': { touroku:'2026-04-23', shorui:'2026-04-24', closed:false },
+    '2026-05-02': { touroku:'2026-04-24', shorui:'2026-04-24', closed:false },
+    '2026-05-03': { touroku:'2026-04-24', shorui:'2026-04-24', closed:false },
+    '2026-05-04': { closed:true },
+    '2026-05-05': { closed:true },
+    '2026-05-06': { closed:true },
+    '2026-05-07': { touroku:'2026-04-28', shorui:'2026-04-30', closed:false },
+    '2026-05-08': { touroku:'2026-04-30', shorui:'2026-04-30', closed:false },
+    '2026-05-09': { touroku:'2026-04-30', shorui:'2026-04-30', closed:false },
+    '2026-05-10': { touroku:'2026-05-01', shorui:'2026-05-01', closed:false },
+    '2026-05-11': { touroku:'2026-05-01', shorui:'2026-05-07', closed:false },
+    '2026-05-12': { touroku:'2026-05-07', shorui:'2026-05-07', closed:false },
+    '2026-05-13': { closed:true },
+    '2026-05-14': { touroku:'2026-05-07', shorui:'2026-05-07', closed:false },
+    '2026-05-15': { touroku:'2026-05-08', shorui:'2026-05-08', closed:false },
+    '2026-05-16': { touroku:'2026-05-08', shorui:'2026-05-08', closed:false },
+    '2026-05-17': { touroku:'2026-05-11', shorui:'2026-05-11', closed:false },
+    '2026-05-18': { touroku:'2026-05-12', shorui:'2026-05-14', closed:false },
+    '2026-05-19': { touroku:'2026-05-14', shorui:'2026-05-14', closed:false },
+    '2026-05-20': { closed:true },
+    '2026-05-21': { touroku:'2026-05-14', shorui:'2026-05-14', closed:false },
+    '2026-05-22': { touroku:'2026-05-15', shorui:'2026-05-15', closed:false },
+    '2026-05-23': { touroku:'2026-05-15', shorui:'2026-05-15', closed:false },
+    '2026-05-24': { touroku:'2026-05-18', shorui:'2026-05-18', closed:false },
+    '2026-05-25': { touroku:'2026-05-19', shorui:'2026-05-21', closed:false },
+    '2026-05-26': { touroku:'2026-05-21', shorui:'2026-05-21', closed:false },
+    '2026-05-27': { closed:true },
+    '2026-05-28': { touroku:'2026-05-21', shorui:'2026-05-21', closed:false },
+    '2026-05-29': { touroku:'2026-05-22', shorui:'2026-05-22', closed:false },
+    '2026-05-30': { touroku:'2026-05-22', shorui:'2026-05-22', closed:false },
+    '2026-05-31': { touroku:'2026-05-25', shorui:'2026-05-25', closed:false },
+    // 6月
+    '2026-06-01': { touroku:'2026-05-26', shorui:'2026-05-28', closed:false },
+    '2026-06-02': { touroku:'2026-05-28', shorui:'2026-05-28', closed:false },
+    '2026-06-03': { closed:true },
+    '2026-06-04': { touroku:'2026-05-28', shorui:'2026-05-28', closed:false },
+    '2026-06-05': { touroku:'2026-05-29', shorui:'2026-05-29', closed:false },
+    '2026-06-06': { touroku:'2026-05-29', shorui:'2026-05-29', closed:false },
+    '2026-06-07': { touroku:'2026-06-01', shorui:'2026-06-01', closed:false },
+    '2026-06-08': { touroku:'2026-06-02', shorui:'2026-06-04', closed:false },
+    '2026-06-09': { touroku:'2026-06-04', shorui:'2026-06-04', closed:false },
+    '2026-06-10': { closed:true },
+    '2026-06-11': { touroku:'2026-06-04', shorui:'2026-06-04', closed:false },
+    '2026-06-12': { touroku:'2026-06-05', shorui:'2026-06-05', closed:false },
+    '2026-06-13': { touroku:'2026-06-05', shorui:'2026-06-05', closed:false },
+    '2026-06-14': { touroku:'2026-06-08', shorui:'2026-06-08', closed:false },
+    '2026-06-15': { touroku:'2026-06-09', shorui:'2026-06-11', closed:false },
+    '2026-06-16': { touroku:'2026-06-11', shorui:'2026-06-11', closed:false },
+    '2026-06-17': { closed:true },
+    '2026-06-18': { touroku:'2026-06-11', shorui:'2026-06-11', closed:false },
+    '2026-06-19': { touroku:'2026-06-12', shorui:'2026-06-12', closed:false },
+    '2026-06-20': { touroku:'2026-06-12', shorui:'2026-06-12', closed:false },
+    '2026-06-21': { touroku:'2026-06-15', shorui:'2026-06-15', closed:false },
+    '2026-06-22': { touroku:'2026-06-16', shorui:'2026-06-18', closed:false },
+    '2026-06-23': { touroku:'2026-06-18', shorui:'2026-06-18', closed:false },
+    '2026-06-24': { closed:true },
+    '2026-06-25': { touroku:'2026-06-18', shorui:'2026-06-18', closed:false },
+    '2026-06-26': { touroku:'2026-06-19', shorui:'2026-06-19', closed:false },
+    '2026-06-27': { touroku:'2026-06-19', shorui:'2026-06-19', closed:false },
+    '2026-06-28': { touroku:'2026-06-22', shorui:'2026-06-22', closed:false },
+    '2026-06-29': { touroku:'2026-06-23', shorui:'2026-06-25', closed:false },
+    '2026-06-30': { touroku:'2026-06-25', shorui:'2026-06-25', closed:false },
+    // 7月
+    '2026-07-01': { closed:true },
+    '2026-07-02': { touroku:'2026-06-25', shorui:'2026-06-25', closed:false },
+    '2026-07-03': { touroku:'2026-06-26', shorui:'2026-06-26', closed:false },
+    '2026-07-04': { touroku:'2026-06-26', shorui:'2026-06-26', closed:false },
+    '2026-07-05': { touroku:'2026-06-29', shorui:'2026-06-29', closed:false },
+    '2026-07-06': { touroku:'2026-06-30', shorui:'2026-07-02', closed:false },
+    '2026-07-07': { touroku:'2026-07-02', shorui:'2026-07-02', closed:false },
+    '2026-07-08': { closed:true },
+    '2026-07-09': { touroku:'2026-07-02', shorui:'2026-07-02', closed:false },
+    '2026-07-10': { touroku:'2026-07-03', shorui:'2026-07-03', closed:false },
+    '2026-07-11': { touroku:'2026-07-03', shorui:'2026-07-03', closed:false },
+    '2026-07-12': { touroku:'2026-07-06', shorui:'2026-07-06', closed:false },
+    '2026-07-13': { touroku:'2026-07-06', shorui:'2026-07-09', closed:false },
+    '2026-07-14': { touroku:'2026-07-07', shorui:'2026-07-09', closed:false },
+    '2026-07-15': { closed:true },
+    '2026-07-16': { touroku:'2026-07-09', shorui:'2026-07-09', closed:false },
+    '2026-07-17': { touroku:'2026-07-09', shorui:'2026-07-09', closed:false },
+    '2026-07-18': { touroku:'2026-07-10', shorui:'2026-07-10', closed:false },
+    '2026-07-19': { touroku:'2026-07-10', shorui:'2026-07-10', closed:false },
+    '2026-07-20': { closed:true },
+    '2026-07-21': { touroku:'2026-07-13', shorui:'2026-07-14', closed:false },
+    '2026-07-22': { closed:true },
+    '2026-07-23': { touroku:'2026-07-14', shorui:'2026-07-16', closed:false },
+    '2026-07-24': { touroku:'2026-07-16', shorui:'2026-07-16', closed:false },
+    '2026-07-25': { touroku:'2026-07-16', shorui:'2026-07-16', closed:false },
+    '2026-07-26': { touroku:'2026-07-17', shorui:'2026-07-17', closed:false },
+    '2026-07-27': { touroku:'2026-07-17', shorui:'2026-07-21', closed:false },
+    '2026-07-28': { touroku:'2026-07-21', shorui:'2026-07-21', closed:false },
+    '2026-07-29': { closed:true },
+    '2026-07-30': { touroku:'2026-07-23', shorui:'2026-07-23', closed:false },
+    '2026-07-31': { touroku:'2026-07-23', shorui:'2026-07-23', closed:false },
+    // 8月
+    '2026-08-01': { touroku:'2026-07-24', shorui:'2026-07-24', closed:false },
+    '2026-08-02': { touroku:'2026-07-24', shorui:'2026-07-24', closed:false },
+    '2026-08-03': { touroku:'2026-07-27', shorui:'2026-07-27', closed:false },
+    '2026-08-04': { touroku:'2026-07-27', shorui:'2026-07-27', closed:false },
+    '2026-08-05': { closed:true },
+    '2026-08-06': { touroku:'2026-07-28', shorui:'2026-07-28', closed:false },
+    '2026-08-07': { touroku:'2026-07-30', shorui:'2026-07-30', closed:false },
+    '2026-08-08': { touroku:'2026-07-30', shorui:'2026-07-30', closed:false },
+    '2026-08-09': { touroku:'2026-07-31', shorui:'2026-07-31', closed:false },
+    '2026-08-10': { touroku:'2026-07-31', shorui:'2026-08-03', closed:false },
+    '2026-08-11': { closed:true },
+    '2026-08-12': { closed:true },
+    '2026-08-13': { closed:true },
+    '2026-08-14': { closed:true },
+    '2026-08-15': { touroku:'2026-08-03', shorui:'2026-08-03', closed:false },
+    '2026-08-16': { touroku:'2026-08-04', shorui:'2026-08-04', closed:false },
+    '2026-08-17': { touroku:'2026-08-06', shorui:'2026-08-06', closed:false },
+    '2026-08-18': { touroku:'2026-08-06', shorui:'2026-08-06', closed:false },
+    '2026-08-19': { closed:true },
+    '2026-08-20': { touroku:'2026-08-07', shorui:'2026-08-07', closed:false },
+    '2026-08-21': { touroku:'2026-08-07', shorui:'2026-08-07', closed:false },
+    '2026-08-22': { touroku:'2026-08-17', shorui:'2026-08-17', closed:false },
+    '2026-08-23': { touroku:'2026-08-17', shorui:'2026-08-17', closed:false },
+    '2026-08-24': { touroku:'2026-08-18', shorui:'2026-08-18', closed:false },
+    '2026-08-25': { touroku:'2026-08-20', shorui:'2026-08-20', closed:false },
+    '2026-08-26': { closed:true },
+    '2026-08-27': { touroku:'2026-08-20', shorui:'2026-08-20', closed:false },
+    '2026-08-28': { touroku:'2026-08-21', shorui:'2026-08-21', closed:false },
+    '2026-08-29': { touroku:'2026-08-21', shorui:'2026-08-21', closed:false },
+    '2026-08-30': { touroku:'2026-08-24', shorui:'2026-08-24', closed:false },
+    '2026-08-31': { touroku:'2026-08-25', shorui:'2026-08-25', closed:false },
+  };
+  Object.assign(legendData, initial);
+  localStorage.setItem('nm_legend', JSON.stringify(legendData));
+}
+
+// ============================================================
+// INITIAL DATA - GLOSSカレンダー（画像より）
+// ============================================================
+function loadInitialGlossData() {
+  const initial = {
+    // 5月
+    '2026-05-01': { nosha:'2026-05-15', kaiso:'2026-05-14', closed:false },
+    '2026-05-02': { nosha:'2026-05-16', kaiso:'2026-05-14', closed:false },
+    '2026-05-03': { closed:true },
+    '2026-05-04': { closed:true },
+    '2026-05-05': { closed:true },
+    '2026-05-06': { closed:true },
+    '2026-05-07': { closed:true },
+    '2026-05-08': { nosha:'2026-05-18', kaiso:'2026-05-15', closed:false },
+    '2026-05-09': { nosha:'2026-05-21', kaiso:'2026-05-16', closed:false },
+    '2026-05-10': { closed:true },
+    '2026-05-11': { nosha:'2026-05-21', kaiso:'2026-05-18', closed:false },
+    '2026-05-12': { nosha:'2026-05-21', kaiso:'2026-05-21', closed:false },
+    '2026-05-13': { closed:true },
+    '2026-05-14': { nosha:'2026-05-22', kaiso:'2026-05-21', closed:false },
+    '2026-05-15': { nosha:'2026-05-25', kaiso:'2026-05-21', closed:false },
+    '2026-05-16': { nosha:'2026-05-28', kaiso:'2026-05-22', closed:false },
+    '2026-05-17': { closed:true },
+    '2026-05-18': { nosha:'2026-05-28', kaiso:'2026-05-25', closed:false },
+    '2026-05-19': { nosha:'2026-05-28', kaiso:'2026-05-26', closed:false },
+    '2026-05-20': { nosha:'2026-05-29', kaiso:'2026-05-28', closed:false },
+    '2026-05-21': { nosha:'2026-05-30', kaiso:'2026-05-28', closed:false },
+    '2026-05-22': { nosha:'2026-06-01', kaiso:'2026-05-29', closed:false },
+    '2026-05-23': { closed:true },
+    '2026-05-24': { closed:true },
+    '2026-05-25': { nosha:'2026-06-04', kaiso:'2026-05-30', closed:false },
+    '2026-05-26': { nosha:'2026-06-04', kaiso:'2026-06-01', closed:false },
+    '2026-05-27': { nosha:'2026-06-04', kaiso:'2026-06-04', closed:false },
+    '2026-05-28': { nosha:'2026-06-05', kaiso:'2026-06-04', closed:false },
+    '2026-05-29': { nosha:'2026-06-06', kaiso:'2026-06-04', closed:false },
+    '2026-05-30': { nosha:'2026-06-08', kaiso:'2026-06-05', closed:false },
+    '2026-05-31': { closed:true },
+    // 6月
+    '2026-06-01': { nosha:'2026-06-11', kaiso:'2026-06-06', closed:false },
+    '2026-06-02': { nosha:'2026-06-11', kaiso:'2026-06-08', closed:false },
+    '2026-06-03': { nosha:'2026-06-12', kaiso:'2026-06-11', closed:false },
+    '2026-06-04': { nosha:'2026-06-15', kaiso:'2026-06-11', closed:false },
+    '2026-06-05': { nosha:'2026-06-18', kaiso:'2026-06-12', closed:false },
+    '2026-06-06': { nosha:'2026-06-18', kaiso:'2026-06-15', closed:false },
+    '2026-06-07': { closed:true },
+    '2026-06-08': { nosha:'2026-06-18', kaiso:'2026-06-16', closed:false },
+    '2026-06-09': { nosha:'2026-06-19', kaiso:'2026-06-18', closed:false },
+    '2026-06-10': { closed:true },
+    '2026-06-11': { nosha:'2026-06-20', kaiso:'2026-06-18', closed:false },
+    '2026-06-12': { nosha:'2026-06-22', kaiso:'2026-06-19', closed:false },
+    '2026-06-13': { closed:true },
+    '2026-06-14': { closed:true },
+    '2026-06-15': { nosha:'2026-06-25', kaiso:'2026-06-20', closed:false },
+    '2026-06-16': { nosha:'2026-06-25', kaiso:'2026-06-22', closed:false },
+    '2026-06-17': { nosha:'2026-06-25', kaiso:'2026-06-23', closed:false },
+    '2026-06-18': { nosha:'2026-06-26', kaiso:'2026-06-25', closed:false },
+    '2026-06-19': { nosha:'2026-06-29', kaiso:'2026-06-25', closed:false },
+    '2026-06-20': { nosha:'2026-07-02', kaiso:'2026-06-26', closed:false },
+    '2026-06-21': { closed:true },
+    '2026-06-22': { nosha:'2026-07-02', kaiso:'2026-06-29', closed:false },
+    '2026-06-23': { nosha:'2026-07-02', kaiso:'2026-06-30', closed:false },
+    '2026-06-24': { nosha:'2026-07-03', kaiso:'2026-07-02', closed:false },
+    '2026-06-25': { nosha:'2026-07-04', kaiso:'2026-07-02', closed:false },
+    '2026-06-26': { nosha:'2026-07-06', kaiso:'2026-07-03', closed:false },
+    '2026-06-27': { closed:true },
+    '2026-06-28': { closed:true },
+    '2026-06-29': { nosha:'2026-07-09', kaiso:'2026-07-04', closed:false },
+    '2026-06-30': { nosha:'2026-07-09', kaiso:'2026-07-06', closed:false },
+    // 7月
+    '2026-07-01': { nosha:'2026-07-10', kaiso:'2026-07-09', closed:false },
+    '2026-07-02': { nosha:'2026-07-13', kaiso:'2026-07-09', closed:false },
+    '2026-07-03': { nosha:'2026-07-16', kaiso:'2026-07-10', closed:false },
+    '2026-07-04': { nosha:'2026-07-16', kaiso:'2026-07-13', closed:false },
+    '2026-07-05': { closed:true },
+    '2026-07-06': { nosha:'2026-07-16', kaiso:'2026-07-16', closed:false },
+    '2026-07-07': { nosha:'2026-07-17', kaiso:'2026-07-16', closed:false },
+    '2026-07-08': { closed:true },
+    '2026-07-09': { nosha:'2026-07-18', kaiso:'2026-07-16', closed:false },
+    '2026-07-10': { nosha:'2026-07-23', kaiso:'2026-07-17', closed:false },
+    '2026-07-11': { closed:true },
+    '2026-07-12': { closed:true },
+    '2026-07-13': { nosha:'2026-07-23', kaiso:'2026-07-18', closed:false },
+    '2026-07-14': { nosha:'2026-07-23', kaiso:'2026-07-23', closed:false },
+    '2026-07-15': { nosha:'2026-07-24', kaiso:'2026-07-23', closed:false },
+    '2026-07-16': { nosha:'2026-07-27', kaiso:'2026-07-23', closed:false },
+    '2026-07-17': { nosha:'2026-07-30', kaiso:'2026-07-24', closed:false },
+    '2026-07-18': { nosha:'2026-07-30', kaiso:'2026-07-27', closed:false },
+    '2026-07-19': { closed:true },
+    '2026-07-20': { closed:true },
+    '2026-07-21': { nosha:'2026-07-30', kaiso:'2026-07-28', closed:false },
+    '2026-07-22': { nosha:'2026-07-31', kaiso:'2026-07-30', closed:false },
+    '2026-07-23': { nosha:'2026-08-01', kaiso:'2026-07-30', closed:false },
+    '2026-07-24': { nosha:'2026-08-03', kaiso:'2026-07-31', closed:false },
+    '2026-07-25': { closed:true },
+    '2026-07-26': { closed:true },
+    '2026-07-27': { nosha:'2026-08-06', kaiso:'2026-08-01', closed:false },
+    '2026-07-28': { nosha:'2026-08-06', kaiso:'2026-08-03', closed:false },
+    '2026-07-29': { nosha:'2026-08-06', kaiso:'2026-08-06', closed:false },
+    '2026-07-30': { nosha:'2026-08-07', kaiso:'2026-08-06', closed:false },
+    '2026-07-31': { nosha:'2026-08-10', kaiso:'2026-08-06', closed:false },
+    // 8月
+    '2026-08-01': { nosha:'2026-08-15', kaiso:'2026-08-07', closed:false },
+    '2026-08-02': { closed:true },
+    '2026-08-03': { nosha:'2026-08-17', kaiso:'2026-08-10', closed:false },
+    '2026-08-04': { nosha:'2026-08-20', kaiso:'2026-08-15', closed:false },
+    '2026-08-05': { nosha:'2026-08-20', kaiso:'2026-08-17', closed:false },
+    '2026-08-06': { nosha:'2026-08-20', kaiso:'2026-08-20', closed:false },
+    '2026-08-07': { nosha:'2026-08-21', kaiso:'2026-08-20', closed:false },
+    '2026-08-08': { closed:true },
+    '2026-08-09': { closed:true },
+    '2026-08-10': { nosha:'2026-08-24', kaiso:'2026-08-20', closed:false },
+    '2026-08-11': { closed:true },
+    '2026-08-12': { closed:true },
+    '2026-08-13': { closed:true },
+    '2026-08-14': { closed:true },
+    '2026-08-15': { nosha:'2026-08-27', kaiso:'2026-08-21', closed:false },
+    '2026-08-16': { closed:true },
+    '2026-08-17': { nosha:'2026-08-27', kaiso:'2026-08-24', closed:false },
+    '2026-08-18': { nosha:'2026-08-27', kaiso:'2026-08-27', closed:false },
+    '2026-08-19': { nosha:'2026-08-28', kaiso:'2026-08-27', closed:false },
+    '2026-08-20': { nosha:'2026-08-29', kaiso:'2026-08-27', closed:false },
+    '2026-08-21': { nosha:'2026-08-31', kaiso:'2026-08-28', closed:false },
+    '2026-08-22': { closed:true },
+    '2026-08-23': { closed:true },
+    '2026-08-24': { nosha:'2026-09-03', kaiso:'2026-08-29', closed:false },
+    '2026-08-25': { nosha:'2026-09-03', kaiso:'2026-08-31', closed:false },
+    '2026-08-26': { nosha:'2026-09-03', kaiso:'2026-09-01', closed:false },
+    '2026-08-27': { nosha:'2026-09-04', kaiso:'2026-09-03', closed:false },
+    '2026-08-28': { nosha:'2026-09-05', kaiso:'2026-09-03', closed:false },
+    '2026-08-29': { nosha:'2026-09-07', kaiso:'2026-09-04', closed:false },
+    '2026-08-30': { closed:true },
+    '2026-08-31': { nosha:'2026-09-10', kaiso:'2026-09-05', closed:false },
+  };
+  Object.assign(glossData, initial);
+  localStorage.setItem('nm_gloss', JSON.stringify(glossData));
+}
+
+// 初回のみ初期データを読み込む（バージョン管理）
+const INIT_VERSION = 'v2-12months';
+if (localStorage.getItem('nm_init_ver') !== INIT_VERSION) {
+  loadInitialLegendData();
+  loadInitialGlossData();
+  localStorage.setItem('nm_init_ver', INIT_VERSION);
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmt(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function fmtFull(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  const days = ['日','月','火','水','木','金','土'];
+  return `${d.getMonth()+1}月${d.getDate()}日(${days[d.getDay()]})`;
+}
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dateStr + 'T00:00:00');
+  return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+}
+function urgencyBadge(dateStr, label) {
+  if (!dateStr) return `<span class="badge badge-none">−</span>`;
+  const d = daysUntil(dateStr);
+  let cls = 'badge-ok', icon = '✓';
+  if (d < 0) { cls = 'badge-danger'; icon = '!'; }
+  else if (d <= 3) { cls = 'badge-danger'; icon = '!'; }
+  else if (d <= 7) { cls = 'badge-warn'; icon = '△'; }
+  return `<span class="badge ${cls}">${icon} ${fmt(dateStr)}</span>`;
+}
+
+function save() {
+  localStorage.setItem('nm_tasks', JSON.stringify(tasks));
+  localStorage.setItem('nm_legend', JSON.stringify(legendData));
+  localStorage.setItem('nm_gloss', JSON.stringify(glossData));
+  localStorage.setItem('nm_touroku_holidays', JSON.stringify(tourokuHolidays));
+}
+
+// ============================================================
+// PAGE NAV
+// ============================================================
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  const map = {tasks:0, legend:1, gloss:2, touroku:3};
+  btns[map[p]].classList.add('active');
+  if (p === 'legend') renderCalendar('legend', currentLegendMonth);
+  if (p === 'gloss') renderCalendar('gloss', currentGlossMonth);
+  if (p === 'touroku') renderTourokuCal(currentTourokuMonth);
+}
+
+// ============================================================
+// TASKS
+// ============================================================
+function addTask() {
+  const customer = document.getElementById('inp-customer').value.trim();
+  const nosha = document.getElementById('inp-nosha').value;
+  const nyuko = document.getElementById('inp-nyuko').value;
+  const shatype = document.getElementById('inp-shatype').value;
+  const method = document.getElementById('inp-method').value;
+  const kibou = document.getElementById('inp-kibou').value;
+  if (!customer) { alert('顧客名を入力してください'); return; }
+  tasks.push({
+    id: Date.now(),
+    customer, nosha, nyuko, shatype, method, kibou,
+    done: false,
+    createdAt: new Date().toISOString()
+  });
+  save();
+  document.getElementById('inp-customer').value = '';
+  document.getElementById('inp-nosha').value = '';
+  document.getElementById('inp-nyuko').value = '';
+  document.getElementById('inp-shatype').value = '';
+  document.getElementById('inp-method').value = '';
+  document.getElementById('inp-kibou').value = '';
+  renderTasks();
+}
+
+function toggleDone(id) {
+  const t = tasks.find(x => x.id === id);
+  if (t) t.done = !t.done;
+  save(); renderTasks();
+}
+
+function toggleFlag(id, flag) {
+  const t = tasks.find(x => x.id === id);
+  if (t) t[flag] = !t[flag];
+  save(); renderTasks();
+}
+
+function deleteTask(id) {
+  if (!confirm('このタスクを削除しますか？')) return;
+  tasks = tasks.filter(x => x.id !== id);
+  save(); renderTasks();
+}
+
+let editingTaskId = null;
+
+function openTaskEdit(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('te-customer').value = t.customer || '';
+  document.getElementById('te-nosha').value = t.nosha || '';
+  document.getElementById('te-nyuko').value = t.nyuko || '';
+  document.getElementById('te-shatype').value = t.shatype || '';
+  document.getElementById('te-method').value = t.method || '';
+  document.getElementById('te-kibou').value = t.kibou || '';
+  document.getElementById('task-modal-overlay').classList.add('open');
+}
+
+function saveTaskEdit() {
+  const t = tasks.find(x => x.id === editingTaskId);
+  if (!t) return;
+  const customer = document.getElementById('te-customer').value.trim();
+  if (!customer) { alert('顧客名を入力してください'); return; }
+  t.customer = customer;
+  t.nosha    = document.getElementById('te-nosha').value || null;
+  t.nyuko    = document.getElementById('te-nyuko').value || null;
+  t.shatype  = document.getElementById('te-shatype').value || '';
+  t.method   = document.getElementById('te-method').value || '';
+  t.kibou    = document.getElementById('te-kibou').value || '';
+  save();
+  closeTaskModal();
+  renderTasks();
+}
+
+function closeTaskModal() {
+  document.getElementById('task-modal-overlay').classList.remove('open');
+  editingTaskId = null;
+}
+
+function closeTaskModalOutside(e) {
+  if (e.target === document.getElementById('task-modal-overlay')) closeTaskModal();
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+
+// 登録締切日から中N日遡って提出期限を計算（赤=休日を除外）
+function calcTourokuDeadline(tourokuDateStr, nakaDays) {
+  if (!tourokuDateStr || nakaDays === null) return null;
+  let cur = new Date(tourokuDateStr + 'T00:00:00');
+  let counted = 0;
+  // 最大180日遡る安全弁
+  for (let i = 0; i < 180; i++) {
+    cur.setDate(cur.getDate() - 1);
+    const ds = cur.toISOString().slice(0, 10);
+    if (!tourokuHolidays[ds]) {
+      // 休みでない日のみカウント
+      counted++;
+      if (counted === nakaDays) return ds;
+    }
+  }
+  return null;
+}
+
+// 書類到着期限（中N日）
+function getShoruidays(task) {
+  if (!task.shatype || !task.method) return null;
+  if (task.shatype === 'futsu' && task.method === 'oss') return 5;
+  if (task.shatype === 'futsu' && task.method === 'daiko') return 2;
+  if (task.shatype === 'kei') return 2;
+  return null;
+}
+
+// 希望番号の申請期限（中N日）
+function getKibouDays(task) {
+  if (task.kibou === 'zutai') return 10;
+  if (task.kibou === 'kibou') return 5;
+  return null;
+}
+
+// 後方互換用（既存コードが使っている場合のみ）
+function getNakaDays(task) {
+  return getShoruidays(task);
+}
+
+function getCalcDates(task) {
+  const ld = task.nosha ? legendData[task.nosha] : null;
+  const gd = task.nyuko ? glossData[task.nyuko] : null;
+  const touroku = (ld && !ld.closed) ? ld.touroku : null;
+  const shoDays = getShoruidays(task);
+  const kibouDays = getKibouDays(task);
+  const tourokuDeadline = touroku ? calcTourokuDeadline(touroku, shoDays) : null;
+  const kibouDeadline = touroku ? calcTourokuDeadline(touroku, kibouDays) : null;
+  return {
+    touroku,
+    shorui: (ld && !ld.closed) ? ld.shorui : null,
+    glossNosha: (gd && !gd.closed) ? gd.nosha : null,
+    glossKaiso: (gd && !gd.closed) ? gd.kaiso : null,
+    tourokuDeadline,
+    kibouDeadline,
+  };
+}
+
+function isUrgent(task) {
+  const c = getCalcDates(task);
+  const dates = [c.touroku, c.glossNosha, c.glossKaiso, c.tourokuDeadline, c.kibouDeadline].filter(Boolean);
+  return dates.some(d => { const n = daysUntil(d); return n !== null && n <= 7 && n >= 0; })
+    || dates.some(d => { const n = daysUntil(d); return n !== null && n < 0; });
+}
+
+function renderTasks() {
+  let filtered = [...tasks];
+  if (currentFilter === 'active') filtered = filtered.filter(t => !t.done);
+  if (currentFilter === 'done') filtered = filtered.filter(t => t.done);
+  if (currentFilter === 'urgent') filtered = filtered.filter(t => !t.done && isUrgent(t));
+  filtered.sort((a,b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.nosha && b.nosha) return a.nosha.localeCompare(b.nosha);
+    return 0;
+  });
+
+  const tbody = document.getElementById('task-tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state"><div class="icon">📋</div><p>タスクがありません</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = filtered.map(t => {
+      const c = getCalcDates(t);
+      return `<tr class="${t.done ? 'done' : ''}">
+        <td><input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleDone(${t.id})"></td>
+        <td><div class="customer-name">${t.customer}　様</div></td>
+        <td class="date-cell">${t.nosha ? fmtFull(t.nosha) : '−'}</td>
+        <td>${c.kibouDeadline
+          ? urgencyBadge(c.kibouDeadline) + '<div class="date-calc">' + (t.kibou==='zutai'?'図柄申請':'希望番号') + '</div>'
+          : t.kibou ? '<span class="badge badge-none">期限未設定</span>' : '<span style="color:var(--text3);font-size:12px;">−</span>'
+        }</td>
+        <td style="text-align:center">${c.kibouDeadline
+          ? `<input type="checkbox" class="task-check" ${t.kibousumi?'checked':''}
+              onchange="toggleFlag(${t.id},'kibousumi')" title="申請済み">`
+          : ''
+        }</td>
+        <td>${urgencyBadge(c.tourokuDeadline)}<div class="date-calc">${
+          c.tourokuDeadline ? '書類到着期限' :
+          !t.nosha ? '未入力' :
+          (!t.shatype || !t.method) ? '種別未選択' :
+          '期限未設定'
+        }</div></td>
+        <td style="text-align:center">
+          <input type="checkbox" class="task-check" ${t.shoteisumi?'checked':''}
+            onchange="toggleFlag(${t.id},'shoteisumi')" title="提出済み">
+        </td>
+        <td>${urgencyBadge(c.touroku)}<div class="date-calc">${c.touroku ? '登録/書類締切' : t.nosha ? '設定なし' : '未入力'}</div></td>
+        <td style="text-align:center">
+          <input type="checkbox" class="task-check" ${t.torokuzsumi?'checked':''}
+            onchange="toggleFlag(${t.id},'torokuzsumi')" title="登録済み">
+        </td>
+        <td class="date-cell">${t.nyuko ? fmtFull(t.nyuko) : '−'}</td>
+        <td>${urgencyBadge(c.glossNosha)}<div class="date-calc">${c.glossNosha ? '納車C最短' : t.nyuko ? '設定なし' : '未入力'}</div></td>
+        <td>${urgencyBadge(c.glossKaiso)}<div class="date-calc">${c.glossKaiso ? '拠点回送日' : t.nyuko ? '設定なし' : '未入力'}</div></td>
+        <td>${t.done ? '<span class="badge badge-done">完了</span>' : isUrgent(t) ? '<span class="badge badge-danger">要対応</span>' : '<span class="badge badge-ok">対応中</span>'}</td>
+        <td style="white-space:nowrap">
+          <button class="edit-btn" onclick="openTaskEdit(${t.id})">✏️</button>
+          <button class="del-btn" onclick="deleteTask(${t.id})">🗑</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // stats
+  const all = tasks.filter(t => !t.done);
+  const urgent = all.filter(t => isUrgent(t));
+  const overdue = all.filter(t => {
+    const c = getCalcDates(t);
+    return [c.touroku, c.glossNosha, c.glossKaiso, c.tourokuDeadline, c.kibouDeadline].some(d => d && daysUntil(d) < 0);
+  });
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${tasks.length}</div><div class="stat-label">全タスク</div></div>
+    <div class="stat-card ok"><div class="stat-num">${tasks.filter(t=>!t.done).length}</div><div class="stat-label">未完了</div></div>
+    <div class="stat-card warning"><div class="stat-num">${urgent.length}</div><div class="stat-label">期限7日以内</div></div>
+    <div class="stat-card danger"><div class="stat-num">${overdue.length}</div><div class="stat-label">期限超過</div></div>
+  `;
+}
+
+// ============================================================
+// CALENDAR RENDER
+// ============================================================
+function renderMonthTabs(type) {
+  const el = document.getElementById(type + '-months');
+  const cur = type === 'legend' ? currentLegendMonth : currentGlossMonth;
+  el.innerHTML = MONTHS.map(m => `
+    <button class="month-tab ${m===cur?'active':''}" onclick="selectMonth('${type}','${m}')">
+      ${MONTH_LABELS[m]}
+    </button>
+  `).join('');
+}
+
+function selectMonth(type, m) {
+  if (type === 'legend') currentLegendMonth = m;
+  else currentGlossMonth = m;
+  renderCalendar(type, m);
+}
+
+function renderCalendar(type, ym) {
+  renderMonthTabs(type);
+  const [y, mo] = ym.split('-').map(Number);
+  const data = type === 'legend' ? legendData : glossData;
+  const calEl = document.getElementById(type + '-cal');
+
+  // ヘッダー
+  const headers = ['月','火','水','木','金','土','日'];
+  const headerCls = ['','','','','','sat','sun'];
+  let html = headers.map((h,i) => `<div class="cal-day-header ${headerCls[i]}">${h}</div>`).join('');
+
+  // 月の最初の日と最後の日
+  const firstDay = new Date(y, mo-1, 1);
+  const lastDay = new Date(y, mo, 0);
+  let startDow = firstDay.getDay(); // 0=日
+  // 月曜始まりに変換
+  startDow = (startDow + 6) % 7;
+
+  // 前月の埋め
+  for (let i = 0; i < startDow; i++) {
+    html += `<div class="cal-cell other-month"></div>`;
+  }
+
+  // 日付セル
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(y, mo-1, d).getDay();
+    const entry = data[dateStr];
+    const isClosed = entry && entry.closed;
+    const hasData = entry && !entry.closed && (
+      type === 'legend' ? (entry.touroku || entry.shorui) : (entry.nosha || entry.kaiso)
+    );
+    const isSun = dow === 0;
+    const isSat = dow === 6;
+
+    let dataHtml = '';
+    if (isClosed) {
+      dataHtml = `<div class="cal-closed-label">定休日</div>`;
+    } else if (entry) {
+      if (type === 'legend') {
+        if (entry.touroku) dataHtml += `<div class="cal-data-line touroku">登 ${fmt(entry.touroku)}</div>`;
+        if (entry.shorui) dataHtml += `<div class="cal-data-line shorui">書 ${fmt(entry.shorui)}</div>`;
+      } else {
+        if (entry.nosha) dataHtml += `<div class="cal-data-line gloss-nosha">納 ${fmt(entry.nosha)}</div>`;
+        if (entry.kaiso) dataHtml += `<div class="cal-data-line gloss-kaiso">回 ${fmt(entry.kaiso)}</div>`;
+      }
+    }
+
+    html += `<div class="cal-cell ${isClosed?'closed':''} ${hasData?'has-data':''} ${isSun?'sunday':''} ${isSat?'saturday':''}"
+      onclick="${isClosed||!inOtherMonth()?'':''}openModal('${type}','${dateStr}')">
+      <div class="cal-date">${d}</div>
+      <div class="cal-data-lines">${dataHtml}</div>
+    </div>`;
+  }
+
+  // 残りを埋める
+  const total = startDow + lastDay.getDate();
+  const remainder = (7 - (total % 7)) % 7;
+  for (let i = 0; i < remainder; i++) {
+    html += `<div class="cal-cell other-month"></div>`;
+  }
+
+  calEl.innerHTML = html;
+}
+
+function inOtherMonth() { return false; }
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(type, dateStr) {
+  modalState = { type, dateStr };
+  const data = type === 'legend' ? legendData : glossData;
+  const entry = data[dateStr] || {};
+  const d = new Date(dateStr + 'T00:00:00');
+  const days = ['日','月','火','水','木','金','土'];
+
+  document.getElementById('modal-date').textContent =
+    `${d.getMonth()+1}月${d.getDate()}日（${days[d.getDay()]}）`;
+  document.getElementById('modal-title').textContent =
+    type === 'legend' ? '📅 レジェンディア 期日設定' : '📅 GLOSS 期日設定';
+  document.getElementById('modal-closed').checked = !!entry.closed;
+
+  if (type === 'legend') {
+    document.getElementById('modal-fields').innerHTML = `
+      <div class="modal-row"><label>新車登録締切日</label><input type="date" id="m-touroku" value="${entry.touroku||''}"></div>
+      <div class="modal-row"><label>拠点書類締切日</label><input type="date" id="m-shorui" value="${entry.shorui||''}"></div>
+    `;
+  } else {
+    document.getElementById('modal-fields').innerHTML = `
+      <div class="modal-row"><label>納車C 最短納車日</label><input type="date" id="m-nosha" value="${entry.nosha||''}"></div>
+      <div class="modal-row"><label>拠点回送日</label><input type="date" id="m-kaiso" value="${entry.kaiso||''}"></div>
+    `;
+  }
+  updateModalClosedState();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function toggleClosed() {
+  const cb = document.getElementById('modal-closed');
+  cb.checked = !cb.checked;
+  updateModalClosedState();
+}
+
+function updateModalClosedState() {
+  const isClosed = document.getElementById('modal-closed').checked;
+  document.getElementById('modal-fields').style.opacity = isClosed ? '0.3' : '1';
+  document.getElementById('modal-fields').style.pointerEvents = isClosed ? 'none' : '';
+}
+
+function saveModal() {
+  const { type, dateStr } = modalState;
+  const isClosed = document.getElementById('modal-closed').checked;
+  const data = type === 'legend' ? legendData : glossData;
+
+  if (isClosed) {
+    data[dateStr] = { closed: true };
+  } else {
+    if (type === 'legend') {
+      data[dateStr] = {
+        closed: false,
+        touroku: document.getElementById('m-touroku').value || null,
+        shorui: document.getElementById('m-shorui').value || null,
+      };
+    } else {
+      data[dateStr] = {
+        closed: false,
+        nosha: document.getElementById('m-nosha').value || null,
+        kaiso: document.getElementById('m-kaiso').value || null,
+      };
+    }
+  }
+  save();
+  closeModal();
+  renderCalendar(type, type === 'legend' ? currentLegendMonth : currentGlossMonth);
+  renderTasks();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ============================================================
+// TOUROKU HOLIDAY CALENDAR
+// ============================================================
+function renderTourokuMonthTabs() {
+  const el = document.getElementById('touroku-months');
+  el.innerHTML = MONTHS.map(m => `
+    <button class="month-tab ${m===currentTourokuMonth?'active':''}" onclick="selectTourokuMonth('${m}')">
+      ${MONTH_LABELS[m]}
+    </button>
+  `).join('');
+}
+
+function selectTourokuMonth(m) {
+  currentTourokuMonth = m;
+  renderTourokuCal(m);
+}
+
+function renderTourokuCal(ym) {
+  renderTourokuMonthTabs();
+  const [y, mo] = ym.split('-').map(Number);
+  const calEl = document.getElementById('touroku-cal');
+  const headers = ['月','火','水','木','金','土','日'];
+  const headerCls = ['','','','','','sat','sun'];
+  let html = headers.map((h,i) => `<div class="cal-day-header ${headerCls[i]}">${h}</div>`).join('');
+
+  const firstDay = new Date(y, mo-1, 1);
+  const lastDay = new Date(y, mo, 0);
+  let startDow = (firstDay.getDay() + 6) % 7;
+
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-cell other-month"></div>`;
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(y, mo-1, d).getDay();
+    const isHoliday = !!tourokuHolidays[dateStr];
+    const isSun = dow === 0;
+    const isSat = dow === 6;
+    html += `<div class="cal-cell touroku-cell ${isHoliday?'touroku-holiday':''} ${isSun?'sunday':''} ${isSat?'saturday':''}"
+      onclick="toggleTourokuHoliday('${dateStr}')">
+      <div class="cal-date">${d}</div>
+      ${isHoliday ? '<div class="cal-closed-label" style="color:#dc2626;font-weight:700;">休日</div>' : ''}
+    </div>`;
+  }
+
+  const total = startDow + lastDay.getDate();
+  const remainder = (7 - (total % 7)) % 7;
+  for (let i = 0; i < remainder; i++) html += `<div class="cal-cell other-month"></div>`;
+
+  calEl.innerHTML = html;
+}
+
+function toggleTourokuHoliday(dateStr) {
+  if (tourokuHolidays[dateStr]) {
+    delete tourokuHolidays[dateStr];
+  } else {
+    tourokuHolidays[dateStr] = true;
+  }
+  save();
+  renderTourokuCal(currentTourokuMonth);
+  renderTasks();
+}
+
+
+// ============================================================
+// INIT
+// ============================================================
+renderTasks();
+renderCalendar('legend', currentLegendMonth);
+renderCalendar('gloss', currentGlossMonth);
+</script>
+</body>
+</html>
