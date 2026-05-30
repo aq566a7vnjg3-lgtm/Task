@@ -311,6 +311,8 @@
     position: relative;
   }
   .cal-cell:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  /* 閲覧専用（cursor:default指定セル）はhoverエフェクト無効 */
+  .cal-cell[style*="cursor:default"]:hover { border-color: var(--border); box-shadow: none; }
   .cal-cell.other-month { background: var(--surface2); opacity: 0.4; cursor: default; }
   .cal-cell.other-month:hover { border-color: var(--border); box-shadow: none; }
   .cal-cell.closed {
@@ -1157,7 +1159,7 @@
     </div>
   </div>
   <div class="info-box">
-    📌 日付をクリックして期日を入力してください。グレーのマスは定休日（入力不要）です。
+    👁 このカレンダーは閲覧専用です。編集は管理者用ツール（admin-calendar.html）で行ってください。
   </div>
   <div class="cal-month-selector" id="legend-months"></div>
   <div class="cal-grid" id="legend-cal"></div>
@@ -1172,7 +1174,7 @@
     </div>
   </div>
   <div class="info-box">
-    📌 日付をクリックして期日を入力してください。定休日のマスは入力不要です。
+    👁 このカレンダーは閲覧専用です。編集は管理者用ツール（admin-calendar.html）で行ってください。
   </div>
   <div class="cal-month-selector" id="gloss-months"></div>
   <div class="cal-grid" id="gloss-cal"></div>
@@ -1187,7 +1189,7 @@
     </div>
   </div>
   <div class="info-box">
-    📌 日付をクリックして休日のON/OFFを切り替えられます。<strong>赤くなっている日＝提出不可</strong>として提出期限の逆算から除外されます。
+    👁 このカレンダーは閲覧専用です。編集は管理者用ツール（admin-calendar.html）で行ってください。<strong>赤い日＝提出不可</strong>として提出期限の逆算から除外されます。
   </div>
   <div class="cal-month-selector" id="touroku-months"></div>
   <div class="cal-grid" id="touroku-cal"></div>
@@ -2254,8 +2256,7 @@ function renderCalendar(type, ym) {
       }
     }
 
-    html += `<div class="cal-cell ${isClosed?'closed':''} ${hasData?'has-data':''} ${isSun?'sunday':''} ${isSat?'saturday':''}"
-      onclick="${isClosed||!inOtherMonth()?'':''}openModal('${type}','${dateStr}')">
+    html += `<div class="cal-cell ${isClosed?'closed':''} ${hasData?'has-data':''} ${isSun?'sunday':''} ${isSat?'saturday':''}" style="cursor:default;">
       <div class="cal-date">${d}</div>
       <div class="cal-data-lines">${dataHtml}</div>
     </div>`;
@@ -2388,8 +2389,7 @@ function renderTourokuCal(ym) {
     const isHoliday = !!tourokuHolidays[dateStr];
     const isSun = dow === 0;
     const isSat = dow === 6;
-    html += `<div class="cal-cell touroku-cell ${isHoliday?'touroku-holiday':''} ${isSun?'sunday':''} ${isSat?'saturday':''}"
-      onclick="toggleTourokuHoliday('${dateStr}')">
+    html += `<div class="cal-cell touroku-cell ${isHoliday?'touroku-holiday':''} ${isSun?'sunday':''} ${isSat?'saturday':''}" style="cursor:default;">
       <div class="cal-date">${d}</div>
       ${isHoliday ? '<div class="cal-closed-label" style="color:#dc2626;font-weight:700;">休日</div>' : ''}
     </div>`;
