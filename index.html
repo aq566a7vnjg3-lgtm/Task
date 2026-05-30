@@ -1482,10 +1482,18 @@ function addTask() {
   const method = document.getElementById('inp-method').value;
   const kibou = document.getElementById('inp-kibou').value;
   if (!customer) { alert('顧客名を入力してください'); return; }
+  const defaultChecklist = [
+    '下取り書類まとめ',
+    'クレジット実行依頼',
+    'クレジット残債一括',
+    '契約書差替',
+    '入金確認',
+  ].map((text, i) => ({ id: Date.now() + i, text, done: false }));
   tasks.push({
     id: Date.now(),
     customer, nosha, nyuko, shatype, method, kibou,
     done: false,
+    checklist: defaultChecklist,
     createdAt: new Date().toISOString()
   });
   save();
