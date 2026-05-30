@@ -799,18 +799,201 @@
   }
   .cal-type-tab.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 
+  /* ===== HAMBURGER MENU ===== */
+  .hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: white;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 20px;
+    line-height: 1;
+    transition: background 0.15s;
+  }
+  .hamburger-btn:hover { background: rgba(255,255,255,0.12); }
+
+  .mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+  }
+  .mobile-menu-overlay.open { display: block; }
+
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -260px;
+    width: 260px;
+    height: 100%;
+    background: var(--text);
+    z-index: 160;
+    transition: right 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.25);
+  }
+  .mobile-menu.open { right: 0; }
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .mobile-menu-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .mobile-menu-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .mobile-menu-close:hover { color: white; }
+
+  .mobile-menu nav {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    gap: 2px;
+  }
+  .mobile-nav-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.75);
+    padding: 14px 20px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .mobile-nav-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+  .mobile-nav-btn.active {
+    color: white;
+    background: rgba(255,255,255,0.12);
+    border-left-color: #4ade80;
+  }
+
+  /* ===== MOBILE TASK CARDS ===== */
+  .task-cards { display: none; gap: 12px; flex-direction: column; }
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .task-card.done { opacity: 0.55; }
+  .task-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .task-card-check {
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .task-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    flex: 1;
+    line-height: 1.3;
+  }
+  .task-card.done .task-card-name { text-decoration: line-through; }
+  .task-card-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .task-card-body { display: flex; flex-direction: column; gap: 8px; }
+
+  .task-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 28px;
+  }
+  .task-card-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 80px;
+  }
+  .task-card-val {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .task-card-divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 4px 0;
+  }
+  .task-card-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
+    .hamburger-btn { display: block; }
+    .header-nav { display: none; }
+
+    header { padding: 0 16px; height: 52px; }
+    .page { padding: 12px; padding-bottom: 80px; }
+
     .form-row { grid-template-columns: 1fr 1fr; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
+
+    .task-table-wrap { display: none; }
+    .task-cards { display: flex; }
+
     .cal-grid { gap: 2px; }
-    .cal-cell { min-height: 60px; padding: 4px; }
-    header { padding: 0 12px; }
-    .page { padding: 12px; }
+    .cal-cell { min-height: 60px; padding: 4px; font-size: 11px; }
     .cal-month-selector { grid-template-columns: repeat(6, 1fr); }
+    .cal-type-tabs { width: 100%; }
+    .cal-type-tab { flex: 1; padding: 7px 8px; font-size: 12px; }
+
+    .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .filters { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+    .filter-btn { white-space: nowrap; flex-shrink: 0; }
   }
+
   @media (max-width: 480px) {
     .cal-month-selector { grid-template-columns: repeat(4, 1fr); }
     .month-tab { font-size: 11px; padding: 5px 2px; }
+    .form-row { grid-template-columns: 1fr; }
+    .stat-num { font-size: 22px; }
+    .task-add-form { padding: 14px; }
   }
 
   /* チェック済み列の薄表示 */
@@ -845,7 +1028,26 @@
     <button class="nav-btn" onclick="showPage('gloss')">🗓 GLOSS</button>
     <button class="nav-btn" onclick="showPage('touroku')">📅 登録課休日</button>
   </nav>
+  <button class="hamburger-btn" onclick="openMobileMenu()" aria-label="メニューを開く">☰</button>
 </header>
+
+<!-- ====== MOBILE MENU ====== -->
+<div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-header">
+    <div class="mobile-menu-title">
+      <span class="header-logo" style="font-size:10px;">Honda</span>
+      <span>納車タスク管理</span>
+    </div>
+    <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+  </div>
+  <nav>
+    <button class="mobile-nav-btn active" id="mnav-tasks" onclick="showPage('tasks');closeMobileMenu()">📋 タスク一覧</button>
+    <button class="mobile-nav-btn" id="mnav-legend" onclick="showPage('legend');closeMobileMenu()">🗓 レジェンディア</button>
+    <button class="mobile-nav-btn" id="mnav-gloss" onclick="showPage('gloss');closeMobileMenu()">🗓 GLOSS</button>
+    <button class="mobile-nav-btn" id="mnav-touroku" onclick="showPage('touroku');closeMobileMenu()">📅 登録課休日</button>
+  </nav>
+</div>
 
 <!-- ====== PAGE: TASKS ====== -->
 <div id="page-tasks" class="page active">
@@ -940,6 +1142,10 @@
       </table>
     </div>
   </div>
+
+  <!-- スマホ用カード一覧 -->
+  <div class="task-cards" id="task-cards"></div>
+
 </div>
 
 <!-- ====== PAGE: LEGEND CALENDAR ====== -->
@@ -1466,9 +1672,27 @@ function showPage(p) {
   const btns = document.querySelectorAll('.nav-btn');
   const map = {tasks:0, legend:1, gloss:2, touroku:3};
   btns[map[p]].classList.add('active');
+  // モバイルメニューのアクティブ状態も更新
+  document.querySelectorAll('.mobile-nav-btn').forEach(el => el.classList.remove('active'));
+  const mnavEl = document.getElementById('mnav-' + p);
+  if (mnavEl) mnavEl.classList.add('active');
   if (p === 'legend') renderCalendar('legend', currentLegendMonth);
   if (p === 'gloss') renderCalendar('gloss', currentGlossMonth);
   if (p === 'touroku') renderTourokuCal(currentTourokuMonth);
+}
+
+// ============================================================
+// MOBILE MENU
+// ============================================================
+function openMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-menu-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-menu-overlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 // ============================================================
@@ -1834,6 +2058,8 @@ function renderTasks() {
     }).join('');
   }
 
+  renderTaskCards(filtered);
+
   // stats
   const all = tasks.filter(t => !t.done);
   const urgent = all.filter(t => isUrgent(t));
@@ -1847,6 +2073,118 @@ function renderTasks() {
     <div class="stat-card warning"><div class="stat-num">${urgent.length}</div><div class="stat-label">期限7日以内</div></div>
     <div class="stat-card danger"><div class="stat-num">${overdue.length}</div><div class="stat-label">期限超過</div></div>
   `;
+}
+
+// ============================================================
+// TASK CARDS (スマホ用)
+// ============================================================
+function renderTaskCards(filtered) {
+  const container = document.getElementById('task-cards');
+  if (!container) return;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>タスクがありません</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(t => {
+    const c = getCalcDates(t);
+    const statusBadge = t.done
+      ? '<span class="badge badge-done">完了</span>'
+      : isUrgent(t)
+        ? '<span class="badge badge-danger">⚠ 要対応</span>'
+        : '<span class="badge badge-ok">対応中</span>';
+
+    const clDone = t.checklist ? t.checklist.filter(x=>x.done).length : 0;
+    const clTotal = t.checklist ? t.checklist.length : 0;
+
+    let kibouRow = '';
+    if (t.kibou && c.kibouDeadline) {
+      const label = t.kibou === 'zutai' ? '図柄申請期限' : '希望番号期限';
+      kibouRow = `
+        <div class="task-card-row">
+          <span class="task-card-label">${label}</span>
+          <div class="task-card-val">
+            ${urgencyBadge(c.kibouDeadline)}
+            <input type="checkbox" class="task-check" style="width:16px;height:16px;"
+              ${t.kibousumi?'checked':''} onchange="toggleFlag(${t.id},'kibousumi')" title="申請済み">
+          </div>
+        </div>`;
+    }
+
+    return `
+    <div class="task-card ${t.done?'done':''}">
+      <div class="task-card-header">
+        <input type="checkbox" class="task-card-check" ${t.done?'checked':''} onchange="toggleDone(${t.id})">
+        <div style="flex:1;">
+          <div class="task-card-name">${t.customer}　様</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+            ${statusBadge}
+            ${t.shatype ? `<span class="badge badge-none">${t.shatype==='futsu'?'普通車':'軽自動車'}</span>` : ''}
+            ${t.method ? `<span class="badge badge-none">${t.method==='oss'?'OSS':'書類代行'}</span>` : ''}
+          </div>
+        </div>
+        <div class="task-card-actions">
+          <button class="checklist-btn ${clTotal>0?'has-checklist':''}" onclick="openChecklistModal(${t.id})" title="チェックリスト" style="padding:5px 8px;">
+            ☑${clTotal>0?` <span class="checklist-badge">${clDone}/${clTotal}</span>`:''}
+          </button>
+        </div>
+      </div>
+
+      <div class="task-card-body">
+        <div class="task-card-row">
+          <span class="task-card-label">📅 納車日</span>
+          <span style="font-size:13px;font-weight:600;">${t.nosha ? fmtFull(t.nosha) : '−'}</span>
+        </div>
+        <div class="task-card-row">
+          <span class="task-card-label">🚗 入庫日</span>
+          <span style="font-size:13px;">${t.nyuko ? fmtFull(t.nyuko) : '−'}</span>
+        </div>
+
+        <hr class="task-card-divider">
+
+        ${kibouRow}
+
+        <div class="task-card-row">
+          <span class="task-card-label">書類到着期限</span>
+          <div class="task-card-val">
+            ${urgencyBadge(c.tourokuDeadline)}
+            <input type="checkbox" class="task-check" style="width:16px;height:16px;"
+              ${t.shoteisumi?'checked':''} onchange="toggleFlag(${t.id},'shoteisumi')" title="提出済み">
+          </div>
+        </div>
+        <div class="task-card-row">
+          <span class="task-card-label">登録/書類締切</span>
+          <div class="task-card-val">
+            ${urgencyBadge(c.touroku)}
+            <input type="checkbox" class="task-check" style="width:16px;height:16px;"
+              ${t.torokuzsumi?'checked':''} onchange="toggleFlag(${t.id},'torokuzsumi')" title="登録済み">
+          </div>
+        </div>
+
+        <hr class="task-card-divider">
+
+        <div class="task-card-row">
+          <span class="task-card-label">納車C最短</span>
+          <span>${urgencyBadge(c.glossNosha)}</span>
+        </div>
+        <div class="task-card-row">
+          <span class="task-card-label">拠点回送日</span>
+          <span>${urgencyBadge(c.glossKaiso)}</span>
+        </div>
+
+        <hr class="task-card-divider">
+
+        <div class="task-card-status-row">
+          <div style="display:flex;gap:6px;">
+            <button class="edit-btn" onclick="openTaskEdit(${t.id})" title="編集">✏️ 編集</button>
+            <button class="memo-btn ${t.memo?'has-memo':''}" onclick="openMemoModal(${t.id})" title="${t.memo?'メモあり':'メモ'}">📝 メモ</button>
+            <button class="del-btn" onclick="deleteTask(${t.id})" title="削除">🗑</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ============================================================
